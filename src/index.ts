@@ -32,6 +32,14 @@ envstash.command('pull')
     console.log('This function is not yet implemented.', str, options);
   });
 
+envstash.command('list')
+  .description(`Lists all environments you have access to.`)
+  .argument('<collection>', 'tag of the environment collection')
+  .option('-r', 'revision', 'returns the environment collection revision number')
+  .action((str, options) => {
+    console.log('This function is not yet implemented.', str, options);
+  });
+
 envstash.command('view')
   .description(`Views an environment collection's variables`)
   .argument('<collection>', 'tag of the environment collection')
