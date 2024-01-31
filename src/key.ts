@@ -4,16 +4,10 @@ import * as fs from 'fs';
 
 import chalk from 'chalk';
 
-import figlet from "figlet";
-
 const linuxConfigDir = `${homedir}/.config/envstash`;
-
-// spawn age process and create a key
 
 export const createKey = async () => {
   if(!fs.existsSync(linuxConfigDir)) fs.mkdirSync(linuxConfigDir);
-
-  // kinda scary
   if(fs.existsSync(`${linuxConfigDir}/envstash_private_key`) && linuxConfigDir) {
     console.error(`${chalk.red.italic('You already have a saved key in your local machine!\n')}Please use the ${chalk.bold('envs rotate key')} command to rotate your encryption/decryption key.`);
     return;
@@ -36,8 +30,6 @@ export const createKey = async () => {
 
 export const rotateKey = async () => {
   if(!fs.existsSync(linuxConfigDir)) fs.mkdirSync(linuxConfigDir);
-
-  // kinda scary
   if(fs.existsSync(`${linuxConfigDir}/envstash_private_key`) && linuxConfigDir) fs.renameSync(`${linuxConfigDir}/envstash_private_key`, `${linuxConfigDir}/${Date.now()}_key_backup`)
 
   const age = spawn('age-keygen', ['-o', `${linuxConfigDir}/envstash_private_key`]);
@@ -53,4 +45,8 @@ export const rotateKey = async () => {
   age.on('close', (code) => {
     process.exit(0);
   });
+}
+
+export const getKey = async () => {
+
 }
