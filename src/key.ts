@@ -8,6 +8,8 @@ import { log } from 'console';
 const linuxConfigDir = `${homedir}/.config/envstash`;
 
 export const createKey = async () => {
+// save user public key on key create
+
   if(!fs.existsSync(linuxConfigDir)) fs.mkdirSync(linuxConfigDir);
   if(fs.existsSync(`${linuxConfigDir}/envstash_private_key`) && linuxConfigDir) {
     console.error(`${chalk.red.italic('You already have a saved key in your local machine!\n')}Please use the ${chalk.bold('envs rotate key')} command to rotate your encryption/decryption key.`);
@@ -30,6 +32,8 @@ export const createKey = async () => {
 }
 
 export const rotateKey = async () => {
+// save user public key on key rotate
+
   if(!fs.existsSync(linuxConfigDir)) fs.mkdirSync(linuxConfigDir);
   if(fs.existsSync(`${linuxConfigDir}/envstash_private_key`) && linuxConfigDir) fs.renameSync(`${linuxConfigDir}/envstash_private_key`, `${linuxConfigDir}/${Date.now()}_key_backup`)
 
