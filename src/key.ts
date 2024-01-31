@@ -29,9 +29,9 @@ export const createKey = async () => {
     console.log(`${chalk.italic(`Your key was successfully rotated!\nIt was saved to ${linuxConfigDir}/envstash_private_key\nDon't share it with anyone but people who are allowed to decrypt your secrets.\nWe won't save this key on our servers, so once it is lost, it is lost forever. Keep that in mind!`)}\n\n${data}`);
   });
 
-  // age.on('close', (code) => {
-  //   console.log(`child process exited with code ${code}`);
-  // });
+  age.on('close', (code) => {
+    process.exit(0);
+  });
 }
 
 export const rotateKey = async () => {
@@ -50,7 +50,7 @@ export const rotateKey = async () => {
     console.log(`${chalk.italic(`Your key was rotated!\nIt was saved to ${linuxConfigDir}/envstash_private_key\nDon't share it with anyone but people who are allowed to decrypt your secrets.\nWe won't save this key on our servers, so once it is lost, it is lost forever. Keep that in mind!`)}\n\n${data}`);
   });
 
-  // age.on('close', (code) => {
-  //   console.log(`child process exited with code ${code}`);
-  // });
+  age.on('close', (code) => {
+    process.exit(0);
+  });
 }
