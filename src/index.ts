@@ -4,16 +4,17 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import os from 'os';
 
-import { authRequest } from './auth.js';
+import { authRequest, getToken } from './auth.js';
 import { createKey, rotateKey } from './key.js';
+import { create, list } from './collection.js';
 
 const envstash = new Command();
 
 const version = '0.0.1';
 
-const list = envstash.command('list');
-const create = envstash.command('create');
-const rotate = envstash.command('rotate');
+const key = envstash.command('key');
+const collection = envstash.command('collection');
+const variable = envstash.command('var');
 
 envstash
   .name('envs')
@@ -83,22 +84,35 @@ envstash.command('key')
     console.log('This function is not yet implemented.', str, options);
   });
 
-list.command('collections')
+collection.command('list')
   .description('Lists the collections from your account')
-  .action((str, options) => {
-    console.log('CHECK LOGIN AND SEE KEYS');
+  .action(async (str, options) => {
+    await list();
   });
 
-create.command('key')
-  .description('Creates a new encryption key for your account.')
+collection.command('create')
+  .description('Creates an environment collection in your account')
+  .argument('<name>', 'name of the collection to create')
+  .action(async (str, options) => {
+    await create(str);
+  });
+
+key.command('create')
+  .description('Creates a new encryption key for your account')
   .action(async (str, options) => {
     await createKey();
   });
 
-rotate.command('key')
-.description('Rotates the encryption key for your account.')
-.action(async (str, options) => {
-  await rotateKey();
-});
+key.command('rotate')
+  .description('Rotates the encryption key for your account')
+  .action(async (str, options) => {
+    await rotateKey();
+  });
+
+variable.command('add')
+  .description('Adds a variable to a collection')
+  .action(async (str, options) => {
+    console.log('unimplemented function');
+  });
 
 envstash.parse();

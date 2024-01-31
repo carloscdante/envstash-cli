@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import figlet from "figlet";
 import * as fs from 'fs';
 import { homedir } from 'os';
+import { messages } from './messages.js';
 
 const log = console.log;
 
@@ -11,6 +12,15 @@ const defaultAuthDomain = 'dev-ibxprky4yw1czvgd.us.auth0.com';
 const clientId = '8vYtW08XChTFpbMVXY0M764E4EXEqS0u';
 
 const linuxConfigDir = `${homedir}/.config/envstash`;
+
+type Auth = {
+  access_token: string,
+  refresh_token: string,
+  id_token: string,
+  scope: string,
+  expires_in: string,
+  token_type: string,
+}
 
 let pollAuthCounter = 0;
 
@@ -55,7 +65,7 @@ Your credentials were saved to your home folder.`, );
     return data;
   } catch (error) {
     if(pollAuthCounter > 8) {
-      log(`${chalk.red.bold('\nUnable to sign you in because the link timed out.')}`)
+      log(messages.SUCCESS_LOGIN)
       return;
     }
     pollAuthCounter++;
@@ -74,4 +84,13 @@ export const authRequest = async () => {
   } catch (error) {
     throw error;
   }
+}
+
+export const getToken = async (): Promise<Auth | boolean> => {
+  //check if there is an existing token
+  if(!fs.existsSync(linuxConfigDir)) return false;
+  if(!fs.existsSync(`${linuxConfigDir}/default-credentials.json`)) return false;
+  const data: string = fs.readFileSync(`${linuxConfigDir}/default-credentials.json`).toString();
+  const credentials = JSON.parse(data);
+  return credentials;
 }
