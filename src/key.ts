@@ -3,6 +3,7 @@ import { homedir } from 'os';
 import * as fs from 'fs';
 
 import chalk from 'chalk';
+import { log } from 'console';
 
 const linuxConfigDir = `${homedir}/.config/envstash`;
 
@@ -47,6 +48,12 @@ export const rotateKey = async () => {
   });
 }
 
-export const getKey = async () => {
-
+export const getKey = async (): Promise<string | undefined> => {
+  if(!fs.existsSync(linuxConfigDir)) fs.mkdirSync(linuxConfigDir);
+  if(!fs.existsSync(`${linuxConfigDir}/envstash_private_key`) && linuxConfigDir) {
+    log('Cannot find private key in storage.');
+    return undefined;
+  }
+  const keyFile = fs.readFileSync(`${linuxConfigDir}/envstash_private_key`, "utf8");
+  return keyFile;
 }
