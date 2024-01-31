@@ -1,15 +1,24 @@
 #! /usr/bin/env node
 
 import { Command } from 'commander';
+import chalk from 'chalk';
+import os from 'os';
 
 import { authRequest } from './auth.js';
+import { createKey, rotateKey } from './key.js';
 
 const envstash = new Command();
 
+const version = '0.0.1';
+
+const list = envstash.command('list');
+const create = envstash.command('create');
+const rotate = envstash.command('rotate');
+
 envstash
   .name('envs')
-  .description('Environment variables made easy. This CLI is designed to interact with the Envstash service and integrate it with your local workflow.')
-  .version('0.0.1');
+  .description('Envs is a CLI designed to interact with the Envstash service and integrate it with your local workflow.')
+  .version(version);
 
 envstash.command('login')
   .description('Authenticates to an envstash instance. Defaults to https://dashboard.envstash.io')
@@ -40,6 +49,12 @@ envstash.command('list')
     console.log('This function is not yet implemented.', str, options);
   });
 
+envstash.command('version')
+.description(`Shows the package version.`)
+.action((str, options) => {
+  console.log(`${chalk.bold('envs')} v${version} running on ${os.arch}`);
+});
+
 envstash.command('view')
   .description(`Views an environment collection's variables`)
   .argument('<collection>', 'tag of the environment collection')
@@ -67,5 +82,23 @@ envstash.command('key')
   .action((str, options) => {
     console.log('This function is not yet implemented.', str, options);
   });
+
+list.command('collections')
+  .description('Lists the collections from your account')
+  .action((str, options) => {
+    console.log('CHECK LOGIN AND SEE KEYS');
+  });
+
+create.command('key')
+  .description('Creates a new encryption key for your account.')
+  .action(async (str, options) => {
+    await createKey();
+  });
+
+rotate.command('key')
+.description('Rotates the encryption key for your account.')
+.action(async (str, options) => {
+  await rotateKey();
+});
 
 envstash.parse();
