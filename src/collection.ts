@@ -29,7 +29,7 @@ export const list = async () => {
         headers: {
           Authorization: `Bearer ${userCredentials.access_token}`
         }
-      })
+      });
       if (data) {
         data.collections.map((collection: Collection) => {
           table.push([collection.content, collection.teamId, collection.updatedAt, collection.published]);
