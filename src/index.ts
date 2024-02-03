@@ -6,7 +6,8 @@ import os from 'os';
 
 import { authRequest, getToken } from './auth.js';
 import { createKey, rotateKey } from './key.js';
-import { create, list } from './collection.js';
+import { create, listCollections } from './collection.js';
+import { addVariable } from './variable.js';
 
 const envstash = new Command();
 
@@ -87,7 +88,7 @@ envstash.command('key')
 collection.command('list')
   .description('Lists the collections from your account')
   .action(async (str, options) => {
-    await list();
+    await listCollections(true);
   });
 
 collection.command('create')
@@ -112,7 +113,7 @@ key.command('rotate')
 variable.command('add')
   .description('Adds a variable to a collection')
   .action(async (str, options) => {
-    console.log('unimplemented function');
+    await addVariable();
   });
 
 envstash.parse();

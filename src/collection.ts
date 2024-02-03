@@ -16,7 +16,7 @@ type Collection = {
   teamId?: string | null
 }
 
-export const list = async () => {
+export const listCollections = async (logTable: boolean) => {
   const userCredentials = await getToken();
   const table = new Table({
     head: ['NAME', 'TEAM', 'LAST UPDATE', 'POPULATED']
@@ -34,12 +34,14 @@ export const list = async () => {
         data.collections.map((collection: Collection) => {
           table.push([collection.content, collection.teamId, collection.updatedAt, collection.published]);
         });
-        log(table.toString());
+        if (logTable) log(table.toString());
+        return data.collections;
       }
     } catch (error) {
       log(`${chalk.red(`Unknown error: Couldn't get your account collections.`)}\n${error}`);
     }
   }
+  return [];
 }
 
 export const create = async (name: string) => {

@@ -14,6 +14,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@inquirer/input": "^1.2.16",
+    "@inquirer/select": "^1.3.3",
     "@libsql/client": "^0.3.6",
     "@prisma/adapter-libsql": "^5.8.1",
     "@prisma/client": "^5.8.1",
@@ -23,11 +25,13 @@
     "commander": "^11.1.0",
     "figlet": "^1.7.0",
     "inquirer": "^9.2.13",
+    "inquirer-autocomplete-standalone": "^0.8.1",
     "open": "^10.0.3"
   },
   "type": "module",
   "devDependencies": {
     "@types/figlet": "^1.5.8",
+    "@types/inquirer": "^9.0.7",
     "@types/node": "^20.11.6",
     "typescript": "^5.3.3"
   }
