@@ -159,7 +159,7 @@ variable
   .argument("<collectionName>", "name of the environment collection")
   .argument("<variableName>", "name of the variable to import")
   .action(async (str, options) => {
-    await getVariable(str, options);
+    await getVariable(str, options, false);
   });
 
 envstash.parse();

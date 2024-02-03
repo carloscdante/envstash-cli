@@ -10,6 +10,7 @@ import { execSync, spawn } from "child_process";
 import axios from "axios";
 import { getToken } from "./auth.js";
 import { v4 as uuidv4 } from "uuid";
+import { cwd } from "process";
 
 const linuxConfigDir = `${homedir}/.config/envstash`;
 
@@ -38,6 +39,7 @@ const decrypt = async (value: string) => {
   );
   return {
     fileName: `${linuxConfigDir}/${tempFileName}.tmp`,
+    encFileName: `${linuxConfigDir}/${tempFileName}.enc`,
   };
   // export it to env/operate on value in another function
 };
@@ -134,7 +136,8 @@ export const addVariable = async () => {
 
 export const getVariable = async (
   collectionName: string,
-  variableName: string
+  variableName: string,
+  fromCollection: boolean
 ) => {
   const userCredentials = await getToken();
   if (typeof userCredentials !== "boolean") {
@@ -155,8 +158,27 @@ export const getVariable = async (
       }
     );
     // console.log(variableRequest);
-    const { fileName } = await decrypt(variableRequest.encryptedValue);
-    console.log(fs.readFileSync(fileName, "utf8"));
+    const { fileName, encFileName } = await decrypt(
+      variableRequest.encryptedValue
+    );
+    const decryptedValue = fs.readFileSync(fileName, "utf8");
+    fs.rmSync(fileName);
+    fs.rmSync(encFileName);
+    if (!fromCollection) {
+      fs.writeFileSync(`${cwd()}/.env`, `${variableName}="${decryptedValue}"`);
+      const exportCommand = `echo "export ${variableName}=${decryptedValue}" >> ~/.zshrc && source ~/.zshrc && rm -- "$0"`;
+      console.log(
+        `Your variable ${chalk.bold(
+          variableName
+        )} was successfully added to a .env file in your current working directory.\n`
+      );
+      console.log(
+        `By default, the Envstash process can't access your current shell, so to add the variables to your system environment, run this command:\n`
+      );
+      console.log(`${chalk.bold(exportCommand)}\n`);
+      return;
+    }
+    // find a way to export it to env
   } else {
     console.log("Not logged in");
   }
