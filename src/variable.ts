@@ -168,9 +168,9 @@ export const getVariable = async (
       fs.writeFileSync(`${cwd()}/.env`, `${variableName}="${decryptedValue}"`);
       const exportCommand = `echo "export ${variableName}=${decryptedValue}" >> ~/.zshrc && source ~/.zshrc && rm -- "$0"`;
       console.log(
-        `Your variable ${chalk.bold(
+        `\nYour variable "${chalk.bold(
           variableName
-        )} was successfully added to a .env file in your current working directory.\n`
+        )}" was successfully added to a .env file in your current working directory.\n`
       );
       console.log(
         `By default, the Envstash process can't access your current shell, so to add the variables to your system environment, run this command:\n`
@@ -178,7 +178,8 @@ export const getVariable = async (
       console.log(`${chalk.bold(exportCommand)}\n`);
       return;
     }
-    // find a way to export it to env
+    // TODO: make collection import logic (append no write, export command script)
+    // TODO: find a way to export it to env
   } else {
     console.log("Not logged in");
   }
