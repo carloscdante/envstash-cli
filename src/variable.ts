@@ -20,7 +20,7 @@ const encrypt = async (name: string, value: string) => {
   // create file with string as value and no extension
   fs.writeFileSync(`${linuxConfigDir}/${name}.tmp`, value, "utf8");
   const age = execSync(
-    `age -e -i ${linuxConfigDir}/envstash_private_key -o ${encFileName} ${tempFileName}`
+    `age -e -a -i ${linuxConfigDir}/envstash_private_key -o ${encFileName} ${tempFileName}`
   );
   return age;
   // encrypt file with age, name it as random string .tmp
@@ -34,10 +34,10 @@ const decrypt = async (value: string) => {
   fs.writeFileSync(`${linuxConfigDir}/${tempFileName}.enc`, value, "utf8");
   // decrypt using default age key to file
   execSync(
-    `age -e -i ${linuxConfigDir}/envstash_private_key -o ${tempFileName}.enc ${tempFileName}`
+    `age --decrypt -i ${linuxConfigDir}/envstash_private_key ${linuxConfigDir}/${tempFileName}.enc > ${linuxConfigDir}/${tempFileName}.tmp`
   );
   return {
-    tempFileName,
+    fileName: `${linuxConfigDir}/${tempFileName}.tmp`,
   };
   // export it to env/operate on value in another function
 };
@@ -127,6 +127,36 @@ export const addVariable = async () => {
         return;
       }
     }
+  } else {
+    console.log("Not logged in");
+  }
+};
+
+export const getVariable = async (
+  collectionName: string,
+  variableName: string
+) => {
+  const userCredentials = await getToken();
+  if (typeof userCredentials !== "boolean") {
+    const { data: collectionRequest } = await axios.get(
+      `http://localhost:3000/collection/${collectionName}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userCredentials.access_token}`,
+        },
+      }
+    );
+    const { data: variableRequest } = await axios.get(
+      `http://localhost:3000/variable/${variableName}?collectionId=${collectionRequest.collection.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userCredentials.access_token}`,
+        },
+      }
+    );
+    // console.log(variableRequest);
+    const { fileName } = await decrypt(variableRequest.encryptedValue);
+    console.log(fs.readFileSync(fileName, "utf8"));
   } else {
     console.log("Not logged in");
   }
