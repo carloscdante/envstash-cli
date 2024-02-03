@@ -6,37 +6,32 @@ import { listCollections } from "./collection.js";
 import chalk from "chalk";
 import { homedir } from "os";
 import * as fs from "fs";
-import { spawn } from "child_process";
+import { execSync, spawn } from "child_process";
+import axios from "axios";
+import { getToken } from "./auth.js";
 
 const linuxConfigDir = `${homedir}/.config/envstash`;
 
 const encrypt = async (name: string, value: string) => {
-  try {
-    const tempFileName = `${linuxConfigDir}/${name}.tmp`;
-    const encFileName = `${linuxConfigDir}/${name}.enc`;
-    // identity is -i linuxConfigDir/envstash_private_key
-    // create file with string as value and no extension
-    fs.writeFileSync(`${linuxConfigDir}/${name}.tmp`, value, "utf8");
-    const age = spawn("age-keygen", [
-      "-e",
-      "-i",
-      `${linuxConfigDir}/envstash_private_key`,
-      "-o",
-      encFileName,
-      tempFileName,
-    ]);
-    age.on("close", (data) => {
-      const encValue = fs.readFileSync(encFileName, "utf8");
-    });
-  } catch (error) {
-    throw "Error getting keyfile." + error;
-  }
+  const tempFileName = `${linuxConfigDir}/${name}.tmp`;
+  const encFileName = `${linuxConfigDir}/${name}.enc`;
+  // identity is -i linuxConfigDir/envstash_private_key
+  // create file with string as value and no extension
+  fs.writeFileSync(`${linuxConfigDir}/${name}.tmp`, value, "utf8");
+  const age = execSync(
+    `age -e -i ${linuxConfigDir}/envstash_private_key -o ${encFileName} ${tempFileName}`
+  );
+  return age;
   // encrypt file with age, name it as random string .tmp
   // on close, read the file and return the value
   // use age multiple recipients so that people in the team can decrypt it as well
 };
 
-const decrypt = async () => {};
+const decrypt = async (name: string) => {
+  // get string from api
+  // create temp file
+  // decrypt using default age key
+};
 
 const getCollectionChoices = async () => {
   const collections = await listCollections(false);
@@ -53,38 +48,77 @@ const getCollectionChoices = async () => {
 };
 
 export const addVariable = async () => {
-  const collections = await getCollectionChoices();
-
-  if (collections) {
-    try {
-      const collectionId = await autocomplete({
-        message: "Which collection are you adding this variable to?",
-        source: async (input) => {
-          let filteredCollections = collections;
-          if (input !== undefined)
-            filteredCollections = collections.filter((value) =>
-              value.content.includes(input)
+  const userCredentials = await getToken();
+  if (typeof userCredentials !== "boolean") {
+    const collections = await getCollectionChoices();
+    if (collections) {
+      try {
+        const collectionId = await autocomplete({
+          message: "Which collection are you adding this variable to?",
+          source: async (input) => {
+            let filteredCollections = collections;
+            if (input !== undefined)
+              filteredCollections = collections.filter((value) =>
+                value.content.includes(input)
+              );
+            return filteredCollections.map((value: Record<string, any>) => {
+              return {
+                name: value.content,
+                value: value.id,
+              };
+            });
+          },
+        });
+        const variableName = await input({
+          message: "What will be the variable name?",
+        });
+        const variableValue = await input({
+          message: "What will be the variable value?",
+        });
+        // TODO: add team condition for recipients
+        // encrypt variable and send string value to api
+        const encFileName = `${linuxConfigDir}/${variableName}.enc`;
+        const tempFileName = `${linuxConfigDir}/${variableName}.tmp`;
+        encrypt(variableName, variableValue);
+        const fileResult = fs.readFileSync(encFileName, "utf8");
+        if (fileResult) {
+          // send to db
+          try {
+            fs.rmSync(encFileName);
+            fs.rmSync(tempFileName);
+            const { data } = await axios.post(
+              "http://localhost:3000/variable/create",
+              {
+                name: variableName,
+                encValue: fileResult,
+                firstFourChars: "TEST",
+                collectionId,
+              },
+              {
+                headers: {
+                  Authorization: `Bearer ${userCredentials.access_token}`,
+                },
+              }
             );
-          return filteredCollections.map((value: Record<string, any>) => {
-            return {
-              name: value.content,
-              value: value.content,
-            };
-          });
-        },
-      });
-      const variableName = await input({
-        message: "What will be the variable name?",
-      });
-      const variableValue = await input({
-        message: "What will be the variable value?",
-      });
-      // add team condition for recipients
-      console.log(collectionId, variableName, variableValue);
-      // encrypt variable and send string value to api
-      const encryptedValue = await encrypt(variableName, variableValue);
-    } catch (error) {
-      return;
+            console.log(
+              `Your variable ${chalk.bold(
+                data.variable.name
+              )} was created! Retrieve it with ${chalk.bold(
+                `envs var import [collection] [variable_name]`
+              )}.`
+            );
+            return;
+          } catch (error) {
+            console.error("Unable to create variable", error);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Unable to create variable", error);
+        return;
+      }
     }
+  } else {
+    console.log("Not logged in");
   }
 };
