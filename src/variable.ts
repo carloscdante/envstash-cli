@@ -9,6 +9,7 @@ import * as fs from "fs";
 import { execSync, spawn } from "child_process";
 import axios from "axios";
 import { getToken } from "./auth.js";
+import { v4 as uuidv4 } from "uuid";
 
 const linuxConfigDir = `${homedir}/.config/envstash`;
 
@@ -27,10 +28,18 @@ const encrypt = async (name: string, value: string) => {
   // use age multiple recipients so that people in the team can decrypt it as well
 };
 
-const decrypt = async (name: string) => {
-  // get string from api
-  // create temp file
-  // decrypt using default age key
+const decrypt = async (value: string) => {
+  const tempFileName = uuidv4();
+  // create temp file w enc data
+  fs.writeFileSync(`${linuxConfigDir}/${tempFileName}.enc`, value, "utf8");
+  // decrypt using default age key to file
+  execSync(
+    `age -e -i ${linuxConfigDir}/envstash_private_key -o ${tempFileName}.enc ${tempFileName}`
+  );
+  return {
+    tempFileName,
+  };
+  // export it to env/operate on value in another function
 };
 
 const getCollectionChoices = async () => {
