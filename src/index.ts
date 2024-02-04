@@ -6,7 +6,7 @@ import os from "os";
 
 import { authRequest, getToken } from "./auth.js";
 import { createKey, rotateKey } from "./key.js";
-import { create, listCollections } from "./collection.js";
+import { create, importVariables, listCollections } from "./collection.js";
 import { addVariable, getVariable } from "./variable.js";
 
 const envstash = new Command();
@@ -160,6 +160,14 @@ variable
   .argument("<variableName>", "name of the variable to import")
   .action(async (str, options) => {
     await getVariable(str, options, false);
+  });
+
+collection
+  .command("import")
+  .description("Imports a collection to your local environment")
+  .argument("<collectionName>", "name of the environment collection")
+  .action(async (str, options) => {
+    await importVariables(str);
   });
 
 envstash.parse();

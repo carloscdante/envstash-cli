@@ -178,6 +178,14 @@ export const getVariable = async (
       console.log(`${chalk.bold(exportCommand)}\n`);
       return;
     }
+    if (!fs.existsSync(`${cwd()}/.env`)) {
+      fs.writeFileSync(
+        `${cwd()}/.env`,
+        `${variableName}="${decryptedValue}"\n`
+      );
+      return;
+    }
+    fs.appendFileSync(`${cwd()}/.env`, `${variableName}="${decryptedValue}"\n`);
     // TODO: make collection import logic (append no write, export command script)
     // TODO: find a way to export it to env
   } else {
