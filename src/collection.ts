@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { getToken } from "./auth.js";
+import { getToken, Auth } from "./auth.js";
 import axios from "axios";
 
 import Table from "cli-table3";
@@ -32,7 +32,7 @@ export const listCollections = async (logTable: boolean) => {
           headers: {
             Authorization: `Bearer ${userCredentials.access_token}`,
           },
-        }
+        },
       );
       if (data) {
         data.collections.map((collection: Collection) => {
@@ -49,8 +49,8 @@ export const listCollections = async (logTable: boolean) => {
     } catch (error) {
       log(
         `${chalk.red(
-          `Unknown error: Couldn't get your account collections.`
-        )}\n${error}`
+          `Unknown error: Couldn't get your account collections.`,
+        )}\n${error}`,
       );
     }
   }
@@ -58,7 +58,7 @@ export const listCollections = async (logTable: boolean) => {
 };
 
 export const create = async (name: string) => {
-  const userCredentials = await getToken();
+  const userCredentials: boolean | Auth = await getToken();
   if (typeof userCredentials !== "boolean") {
     try {
       const { data, status } = await axios.post(
@@ -70,32 +70,32 @@ export const create = async (name: string) => {
           headers: {
             Authorization: `Bearer ${userCredentials.access_token}`,
           },
-        }
+        },
       );
 
       const collection = data.collection as Collection;
       if (status == 200 && collection) {
         log(
           `${chalk.bold(
-            `Your collection was created!`
+            `Your collection was created!`,
           )}\nStart using it by adding new environment variables:\n\n${chalk.bold(
-            `envs var add ${collection.content} [VARIABLE_NAME] [VARIABLE_VALUE]\n\n`
-          )}`
+            `envs var add ${collection.content} [VARIABLE_NAME] [VARIABLE_VALUE]\n\n`,
+          )}`,
         );
         return;
       }
       log(
-        `${chalk.red(`Unknown error: Couldn't create collection.`)}\n${data}`
+        `${chalk.red(`Unknown error: Couldn't create collection.`)}\n${data}`,
       );
     } catch (error) {
       log(
-        `${chalk.red(`Unknown error: Couldn't create collection.`)}\n${error}`
+        `${chalk.red(`Unknown error: Couldn't create collection.`)}\n${error}`,
       );
     }
   }
 };
 
-export const importVariables = async (name: string) => {
+export const importVariables = async (name: string): Promise<void> => {
   const userCredentials = await getToken();
   if (typeof userCredentials !== "boolean") {
     try {
@@ -105,32 +105,34 @@ export const importVariables = async (name: string) => {
           headers: {
             Authorization: `Bearer ${userCredentials.access_token}`,
           },
-        }
+        },
       );
       await Promise.allSettled(
         collectionRequest.collection.variables.map(
-          async (variable: Record<string, any>) => {
+          async (variable: Record<string, any>): Promise<void> => {
             await getVariable(name, variable.name, true);
-          }
-        )
+          },
+        ),
       );
       log(
         `\nYour collection "${chalk.bold(
-          name
-        )}" was successfully added to a .env file in your current working directory.\n`
+          name,
+        )}" was successfully added to a .env file in your current working directory.\n`,
       );
       log(
-        `By default, the Envstash process can't access your current shell, so to add the variables to your system environment, run this command:\n`
+        `By default, the Envstash process can't access your current shell, so to add the variables to your system environment, run this command:\n`,
       );
     } catch (error) {
       console.log(
         chalk.red(
           "Error getting one or more variables from the collection.",
-          error
-        )
+          error,
+        ),
       );
     }
   } else {
     console.log("Not logged in");
   }
 };
+
+export const importEnvFile = async () => {};

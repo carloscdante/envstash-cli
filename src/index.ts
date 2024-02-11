@@ -4,7 +4,7 @@ import { Command } from "commander";
 import chalk from "chalk";
 import os from "os";
 
-import { authRequest, getToken } from "./auth.js";
+import { authRequest } from "./auth.js";
 import { createKey, rotateKey } from "./key.js";
 import { create, importVariables, listCollections } from "./collection.js";
 import { addVariable, getVariable } from "./variable.js";
@@ -16,23 +16,24 @@ const version = "0.0.1";
 const key = envstash.command("key");
 const collection = envstash.command("collection");
 const variable = envstash.command("var");
+const file = envstash.command("file");
 
 envstash
   .name("envs")
   .description(
-    "Envs is a CLI designed to interact with the Envstash service and integrate it with your local workflow."
+    "Envs is a CLI designed to interact with the Envstash service and integrate it with your local workflow.",
   )
   .version(version);
 
 envstash
   .command("login")
   .description(
-    "Authenticates to an envstash instance. Defaults to https://dashboard.envstash.io"
+    "Authenticates to an envstash instance. Defaults to https://cli.envstash.io",
   )
   .option("--token", "returns an access token you can reuse")
   .action(async (str, options) => {
     console.log(
-      "Logging you into Envstash Cloud...\nPlease confirm it on your browser with the following url:\n"
+      "Logging you into Envstash Cloud...\nPlease confirm it on your browser with the following url:\n",
     );
     try {
       await authRequest();
@@ -44,16 +45,16 @@ envstash
 envstash
   .command("pull")
   .description(
-    "Fetches an environment collection or pulls recent changes to a collection"
+    "Fetches an environment collection or pulls recent changes to a collection",
   )
   .argument("<collection>", "tag of the environment collection")
   .option(
     "--overwrite",
-    "overwrites your current environment variables with the same name"
+    "overwrites your current environment variables with the same name",
   )
   .option(
     "--file",
-    "creates or populates a local .env file in your current working directory"
+    "creates or populates a local .env file in your current working directory",
   )
   .action((str, options) => {
     console.log("This function is not yet implemented.", str, options);
@@ -66,7 +67,7 @@ envstash
   .option(
     "-r",
     "revision",
-    "returns the environment collection revision number"
+    "returns the environment collection revision number",
   )
   .action((str, options) => {
     console.log("This function is not yet implemented.", str, options);
@@ -86,7 +87,7 @@ envstash
   .option(
     "-r",
     "revision",
-    "returns the environment collection revision number"
+    "returns the environment collection revision number",
   )
   .action((str, options) => {
     console.log("This function is not yet implemented.", str, options);
@@ -103,7 +104,7 @@ envstash
 envstash
   .command("keys")
   .description(
-    "Fetches all of the keys used to encrypt and decrypt variables owned by your account"
+    "Fetches all of the keys used to encrypt and decrypt variables owned by your account",
   )
   .action((str, options) => {
     console.log("This function is not yet implemented.", str, options);
@@ -166,6 +167,15 @@ collection
   .command("import")
   .description("Imports a collection to your local environment")
   .argument("<collectionName>", "name of the environment collection")
+  .action(async (str, options) => {
+    await importVariables(str);
+  });
+
+file
+  .command("import")
+  .description(
+    `Imports a file in a .env format (NAME="VALUE") to one of your collections.`,
+  )
   .action(async (str, options) => {
     await importVariables(str);
   });
